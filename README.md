@@ -1,6 +1,6 @@
 # ec2-setup-sos-workflow
 
-A simple pipeline built with [SoS Workflow](https://vatlab.github.io/sos-docs/workflow.html) ([GitHub repository](https://vatlab.github.io/sos-docs/index.html#content)) to manage [AWS EC2 instances and EBS volumes](https://aws.amazon.com/ec2/).
+A simple pipeline built with [SoS Workflow](https://vatlab.github.io/sos-docs/workflow.html) ([GitHub repository](https://github.com/vatlab/sos)) to manage [AWS EC2 instances and EBS volumes](https://aws.amazon.com/ec2/).
 
 ## Installation
 
@@ -54,17 +54,17 @@ cat ~/.aws/credentials
 To launch a new EC2 setup:
 
 ```sh
-# the following command will:
+sos run -c config.yml init.sos -v4
+
+# this will:
 # launch a new ec2 instance, create a new ebs volume, attach the volume to the instance, 
 # add the instance's public dns/ip to your local ssh known_hosts, update the yum packages,
 # install conda and sos, and format the ebs volume and mount it to the instance
-
-sos run -c config.yml init.sos -v4
 ```
 
 After running `init.sos` above, a new instance is now ready for use.
 
-### Your pipeline
+### Your pipeline/workflow
 
 If you are using SoS workflows, set `metadata/config_with_ec2_host.yml` as your config file when running tasks within the instance. For example: `sos run -c metadata/config_with_ec2_host.yml YOUR_WORKFLOW.sos`
 
@@ -73,11 +73,12 @@ If you are using SoS workflows, set `metadata/config_with_ec2_host.yml` as your 
 When done with your pipeline:
 
 ```sh
-# the following command will undo the init steps:
+sos run -c config.yml teardown.sos -v4
+
+# this will undo the steps done with `init.sos`:
 # umount the ebs volume (device), detach it, terminate the instance, delete metadata files,
 # optionally save a snapshot of the ebs volume, and delete the volume
 
-sos run -c config.yml teardown.sos -v4
 ```
 
 After running `teardown.sos`, all your EC2 resrouces are not deleted/terminated (except for the snapshot of your EBS volume, if you have chosen to create it).
@@ -86,7 +87,7 @@ After running `teardown.sos`, all your EC2 resrouces are not deleted/terminated 
 ## Troubleshooting
 
 ```sh
-# lists all tasks
+# lists all local tasks
 # tasks live in ~/.sos/tasks/
 sos status
 
@@ -103,7 +104,7 @@ sos status c23ad54f11df17b6 -v4
 
 
 # check the connection to the ec2 instance
-# which is named ec2 in our config.yml
+# which is also named ec2 in our config YAML
 sos remote -c metadata/config_with_ec2_host.yml test ec2 -v4
 ```
 
