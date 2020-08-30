@@ -1,0 +1,31 @@
+project_name: "PROJ_NAME"
+
+ec2:
+  ami_id: "AMI_ID" # e.g., Amazon Linux 2 AMI (HVM), SSD Volume Type: https://aws.amazon.com/amazon-linux-2/
+  instance_type: "INSTANCE_TYPE" # https://aws.amazon.com/ec2/instance-types/
+  iam_profile: "ROLE_NAME" # https://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles_use_switch-role-ec2_instance-profiles.html
+  security_group_id: "SG_ID" # https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-security-groups.html
+
+###########################
+# ebs section is optional #
+###########################
+ebs:
+  mount_dir: "/PROJ_NAME" # the ebs volume will be mounted to this directory
+  # volume_size: "10" # default is 100 GB
+  # s3_bucket_input: "BUCKET_NAME" # if not set, this is ignored in favor of volume_size
+  # create_snapshot_before_deletion: "True" # default is False - if you decide to use True, beware that snapshot creation may take hours and meanwhile the workflow will be hanging on
+  # s3_bucket_size_multiplier: "4" # default is 1 - a multiplier used to define the volume size based on x times the size of files in s3 bucket input
+
+############################################
+# beware if you are using ~/.sos/hosts.yml #
+# we are overwriting it in this section    #
+############################################
+localhost: local
+hosts:
+  local:
+    paths:
+      home: "" # you can leave this empty, it will be filled in automatically by init.sos
+  ec2:
+    pem_file: "/Users/USER_NAME/.ssh/YOUR_AWS_KEYFILE.pem" # https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-key-pairs.html
+    paths:
+      home: /home/ec2-user/ # user in the ec2 instance is assumed to be ec2-user

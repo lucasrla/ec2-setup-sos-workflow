@@ -1,0 +1,63 @@
+[global]
+output_dirname = "metadata"
+
+cfg = CONFIG
+# print("CONFIG", cfg)
+
+
+[update]
+task: queue="ec2"
+sh:
+    sudo yum update -y
+    sudo yum install xfsprogs -y
+
+[ebs_format]
+task: queue="ec2"
+sh:
+    # TODO: this should not be hardcoded, many things can go wrong
+    # depending on the instance type, it could be /dev/xvdf
+    # https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/device_naming.html
+    # it could be other volumes as well
+    #
+    # an alternative would be to use lsblk and grep to filter the devices
+    # https://unix.stackexchange.com/questions/580683/filter-lsblk-command-using-awk-or-grep
+    # https://unix.stackexchange.com/questions/588735/how-to-output-only-dev-names-and-types-in-lsblk?rq=1
+    sudo mkfs -t xfs /dev/nvme1n1
+
+
+[ebs_mount]
+mount_dir = cfg["ebs"]["mount_dir"]
+
+task: queue="ec2"
+sh: expand=True
+    sudo test ! -d {mount_dir} && sudo mkdir {mount_dir}
+    sudo mount /dev/nvme1n1 {mount_dir}
+    sudo test -O {mount_dir} && sudo chown -R ec2-user {mount_dir}
+    # lsblk
+
+
+[ebs_umount]
+mount_dir = cfg["ebs"]["mount_dir"]
+
+task: queue="ec2"
+sh: expand=True
+    sudo umount {mount_dir}
+    # lsblk
+
+
+[start]
+# https://vatlab.github.io/sos-docs/doc/user_guide/nested_workflow.html
+if cfg["ebs"]["mount_dir"]:
+    sos_run("update + ebs_format + ebs_mount")
+else:
+    sos_run("update")
+
+
+[stop]
+if cfg["ebs"]["mount_dir"]:
+    sos_run("ebs_umount")
+
+
+[default]
+sh:
+    echo "Please run one of the specific workflows: sos run [-c CONFIG_FILE] remote.sos start|stop [-v4]"
