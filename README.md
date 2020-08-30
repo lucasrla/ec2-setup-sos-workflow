@@ -59,7 +59,7 @@ sos run -c config.yml init.sos -v4
 # this will:
 # launch a new ec2 instance, create a new ebs volume, attach the volume to the instance, 
 # add the instance's public dns/ip to your local ssh known_hosts, update the yum packages,
-# install conda and sos, and format the ebs volume and mount it to the instance
+# install conda and sos, format the ebs volume, and mount it to the instance
 ```
 
 After running `init.sos` above, a new instance is now ready for use.
