@@ -2,6 +2,7 @@
 
 A simple pipeline built with [SoS Workflow](https://vatlab.github.io/sos-docs/workflow.html) ([GitHub repository](https://github.com/vatlab/sos)) to manage [AWS EC2 instances and EBS volumes](https://aws.amazon.com/ec2/).
 
+
 ## Installation
 
 ### conda
@@ -27,7 +28,7 @@ poetry install
 # or:
 pip install -r requirements.txt
 
-# note, requirements.txt was generated via:
+# note, requirements.txt in this repository were generated via:
 # poetry export --without-hashes -f requirements.txt -o requirements.txt
 ```
 
@@ -47,6 +48,7 @@ cat ~/.aws/config
 cat ~/.aws/credentials
 ```
 
+
 ## Usage
 
 ### Init
@@ -62,7 +64,7 @@ sos run -c config.yml init.sos -v4
 # install conda and sos, format the ebs volume, and mount it to the instance
 ```
 
-After running `init.sos` above, a new instance is now ready for use.
+After running `init.sos`, a new instance will be ready for use.
 
 ### Your pipeline/workflow
 
@@ -81,7 +83,7 @@ sos run -c config.yml teardown.sos -v4
 
 ```
 
-After running `teardown.sos`, all your EC2 resrouces are not deleted/terminated (except for the snapshot of your EBS volume, if you have chosen to create it).
+After running `teardown.sos`, the EC2 resources created with `init.sos` will be deleted/terminated (except for the snapshot of your EBS volume, if you have chosen to create it).
 
 
 ## Troubleshooting
@@ -107,6 +109,7 @@ sos status c23ad54f11df17b6 -v4
 # which is also named ec2 in our config YAML
 sos remote -c metadata/config_with_ec2_host.yml test ec2 -v4
 ```
+
 
 ## License
 

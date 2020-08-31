@@ -10,20 +10,13 @@ print("CONFIG", cfg)
 output: f"{output_dirname}/ec2_instance.json"
 
 python: expand=True
-    import os
-    import sys
-    # workaround to make "ec2_setup" directory importable within SoS python blocks
-    # cwd was in sys.path, so we need to append it
-    # https://chrisyeh96.github.io/2017/08/08/definitive-guide-python-imports.html#case-2-syspath-could-change
-    # TODO: turn ec2_setup into a proper python package and then install and import it
-    sys.path.append(os.getcwd())
-
     import json
+    import ec2_setup
+
     cfg_str = "{cfg}"
     # https://stackoverflow.com/questions/988228/convert-a-string-representation-of-a-dictionary-to-a-dictionary
     cfg = json.loads(cfg_str.replace("'", "\""))
 
-    import ec2_setup
     ec2_instance = ec2_setup.launch_instance(cfg)
 
     with open("{_output}", "w") as fp:
@@ -35,11 +28,9 @@ python: expand=True
 input: f"{output_dirname}/ec2_instance.json"
 
 python: expand=True
-    import os
-    import sys
-    sys.path.append(os.getcwd())
-
     import json
+    import ec2_setup    
+
     cfg_str = "{cfg}"
     cfg = json.loads(cfg_str.replace("'", "\""))
 
@@ -47,7 +38,6 @@ python: expand=True
         ec2_instance = json.load(fp)
         print("ec2_instance metadata loaded")
 
-    import ec2_setup
     ec2_setup.wait_for_status_checks(ec2_instance)
     print(f"ec2_instance now ready: status checks OK")
 
@@ -57,11 +47,9 @@ input: f"{output_dirname}/ec2_instance.json"
 output: f"{output_dirname}/ebs_volume.json"
 
 python: expand=True
-    import os
-    import sys
-    sys.path.append(os.getcwd())
-
     import json
+    import ec2_setup
+
     cfg_str = "{cfg}"
     cfg = json.loads(cfg_str.replace("'", "\""))
 
@@ -69,7 +57,6 @@ python: expand=True
         ec2_instance = json.load(fp)
         print("ec2_instance metadata loaded")
 
-    import ec2_setup
     ebs_volume = ec2_setup.create_volume(cfg, ec2_instance)
 
     with open("{_output}", "w") as fp:
@@ -86,6 +73,7 @@ depends: sos_step("102")
 
 python: expand=True
     import json
+
     with open("{_input}", "r") as fp:
         ec2_instance = json.load(fp)
 
@@ -116,6 +104,9 @@ depends: sos_step("105")
 
 python: expand=True
     import json
+    import os
+    import yaml    
+
     cfg_str = "{cfg}"
     cfg = json.loads(cfg_str.replace("'", "\""))
 
@@ -123,11 +114,8 @@ python: expand=True
         ec2_instance = json.load(fp)
     
     cfg['hosts']['ec2']['address'] = "ec2-user@" + ec2_instance["public_ip"]
-    
-    import os
     cfg['hosts']['local']['paths']['home'] = os.getcwd()
 
-    import yaml
     with open("{_output}", "w") as f:
         yaml.dump(cfg, f, default_flow_style=False)
 
@@ -136,26 +124,24 @@ python: expand=True
 input: f"{config_ec2_yml}"
 
 python: expand=True
+    import subprocess
     import yaml
+
     with open("{_input}", "r") as fp:
         cfg_ec2 = yaml.load(fp, Loader=yaml.FullLoader)
-    # print(cfg_ec2)
 
     ec2_addr = cfg_ec2['hosts']['ec2']['address']
-    # print(ec2_addr)
     pem_file = cfg_ec2['hosts']['ec2']['pem_file']
-    # print(pem_file)
 
-    import subprocess
     cmd_args = ("scp", "-i", pem_file, "install_miniconda_sos.sh", ec2_addr + ":~/")
     print(cmd_args)
     p = subprocess.run(cmd_args)
-    print(p)
+    print("subprocess output:", p)
 
     cmd_args = ("ssh", ec2_addr, "-v", "-i", pem_file, "-t", "source install_miniconda_sos.sh")
     print(cmd_args)
     p = subprocess.run(cmd_args)
-    print(p)
+    print("subprocess output:", p)
 
 
 [108]

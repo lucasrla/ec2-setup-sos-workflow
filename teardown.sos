@@ -18,16 +18,13 @@ input: f"{output_dirname}/ebs_volume.json"
 depends: sos_step("200")
 
 python: expand=True
-    import os
-    import sys
-    sys.path.append(os.getcwd())
-
     import json
+    import ec2_setup
+
     with open("{_input}", "r") as fp:
         ebs_volume = json.load(fp)
         print("ebs_volume metadata loaded")
 
-    import ec2_setup
     ec2_setup.detach_volume(ebs_volume)
     print("ebs_volume now detached")
 
@@ -37,16 +34,14 @@ input: f"{output_dirname}/ec2_instance.json"
 depends: sos_step("201")
 
 python: expand=True
-    import os
-    import sys
-    sys.path.append(os.getcwd())
-
     import json
+    import os
+    import ec2_setup
+
     with open("{_input}", "r") as fp:
         ec2_instance = json.load(fp)
         print(f"ec2_instance metadata loaded")
 
-    import ec2_setup
     state = ec2_setup.terminate_instance(ec2_instance)
 
     if state == "shutting-down":
@@ -75,11 +70,10 @@ input: f"{output_dirname}/ebs_volume.json"
 depends: sos_step("202")
 
 python: expand=True
-    import os
-    import sys
-    sys.path.append(os.getcwd())
-
     import json
+    import os
+    import ec2_setup
+
     with open("{_input}", "r") as fp:
         ebs_volume = json.load(fp)
         print(f"ebs_volume metadata loaded")
@@ -93,7 +87,6 @@ python: expand=True
     else: 
         should_create_snapshot = False
 
-    import ec2_setup
     if should_create_snapshot:
         snapshot_id = ec2_setup.create_snapshot(ebs_volume)
     

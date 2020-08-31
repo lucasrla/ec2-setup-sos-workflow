@@ -1,0 +1,10 @@
+pyproject.toml
+setup.py
+ec2_setup/__init__.py
+ec2_setup/instances.py
+ec2_setup/volumes.py
+ec2_setup.egg-info/PKG-INFO
+ec2_setup.egg-info/SOURCES.txt
+ec2_setup.egg-info/dependency_links.txt
+ec2_setup.egg-info/requires.txt
+ec2_setup.egg-info/top_level.txt

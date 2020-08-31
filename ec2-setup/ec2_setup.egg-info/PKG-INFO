@@ -1,0 +1,11 @@
+Metadata-Version: 1.2
+Name: ec2-setup
+Version: 0.1.0
+Summary: A thin wrapper around boto3 to manage AWS EC2 instances and EBS volumes
+Home-page: UNKNOWN
+Author: Lucas Amaro
+Author-email: lucasrla@users.noreply.github.com
+License: UNKNOWN
+Description: UNKNOWN
+Platform: UNKNOWN
+Requires-Python: >=3.6,<4.0
