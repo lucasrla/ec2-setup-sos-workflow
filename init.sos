@@ -28,11 +28,7 @@ python: expand=True
 input: f"{output_dirname}/ec2_instance.json"
 
 python: expand=True
-    import json
     import ec2_setup    
-
-    cfg_str = "{cfg}"
-    cfg = json.loads(cfg_str.replace("'", "\""))
 
     with open("{_input}", "r") as fp:
         ec2_instance = json.load(fp)
