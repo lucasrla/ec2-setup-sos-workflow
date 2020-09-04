@@ -15,17 +15,3 @@ ebs:
   # s3_bucket_input: "BUCKET_NAME" # if not set, this is ignored in favor of volume_size
   # create_snapshot_before_deletion: "True" # default is False - if you decide to use True, beware that snapshot creation may take hours and meanwhile the workflow will be hanging on
   # s3_bucket_size_multiplier: "4" # default is 1 - a multiplier used to define the volume size based on x times the size of files in s3 bucket input
-
-############################################
-# beware if you are using ~/.sos/hosts.yml #
-# we are overwriting it in this section    #
-############################################
-localhost: local
-hosts:
-  local:
-    paths:
-      home: "" # you can leave this empty, it will be filled in automatically by init.sos
-  ec2:
-    pem_file: "/Users/USER_NAME/.ssh/YOUR_AWS_KEYFILE.pem" # https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-key-pairs.html
-    paths:
-      home: /home/ec2-user/ # user in the ec2 instance is assumed to be ec2-user

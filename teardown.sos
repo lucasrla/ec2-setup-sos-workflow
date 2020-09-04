@@ -1,16 +1,13 @@
 [global]
 output_dirname = "metadata"
-config_ec2_yml = f"{output_dirname}/config_with_ec2_host.yml"
 
 cfg = CONFIG
 print("CONFIG", cfg)
 
 
 [200]
-input: f"{config_ec2_yml}"
-
 sh: expand=True
-    sos run -c {_input} remote.sos stop -v4
+    sos run -c config.yml remote.sos stop -v4
 
 
 [201]
@@ -58,14 +55,6 @@ sh: expand=True
     
 
 [204]
-input: f"{config_ec2_yml}"
-depends: sos_step("202")
-
-sh: expand=True
-    rm {_input}
-
-
-[205]
 input: f"{output_dirname}/ebs_volume.json"
 depends: sos_step("202")
 

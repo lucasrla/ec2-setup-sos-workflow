@@ -9,8 +9,11 @@ A simple pipeline built with [SoS Workflow](https://vatlab.github.io/sos-docs/wo
 
 ```sh
 conda create --name ec2-setup-sos --channel conda-forge python=3 pyyaml boto3 sos black
+
 git clone https://github.com/lucasrla/ec2-setup-sos-workflow
+
 cd ec2-setup-sos-workflow
+
 conda activate ec2-setup-sos
 ```
 
@@ -18,6 +21,7 @@ conda activate ec2-setup-sos
 
 ```sh
 git clone https://github.com/lucasrla/ec2-setup-sos-workflow
+
 cd ec2-setup-sos-workflow
 
 # create and activate a virtualenv, for example:
@@ -32,12 +36,17 @@ pip install -r requirements.txt
 # poetry export --without-hashes -f requirements.txt -o requirements.txt
 ```
 
+
 ## Configuration
 
 ```sh
-# edit config.template.yml to match your needs
-vim config.template.yml
+# edit config.TEMPLATE.yml to match your needs
+vim config.TEMPLATE.yml
 # and then save it as config.yml
+
+# edit hosts.TEMPLATE.yml to match your needs
+vim hosts.TEMPLATE.yml
+# save it as ~/.sos/hosts.yml
 
 # make sure your ~/.aws/config is properly set
 # https://boto3.amazonaws.com/v1/documentation/api/latest/guide/configuration.html
@@ -68,7 +77,7 @@ After running `init.sos`, a new instance will be ready for use.
 
 ### Your pipeline/workflow
 
-If you are using SoS workflows, set `metadata/config_with_ec2_host.yml` as your config file when running tasks within the instance. For example: `sos run -c metadata/config_with_ec2_host.yml YOUR_WORKFLOW.sos`
+If you are using SoS workflows, you can now run tasks within the instance via `tasks: queue='ec2'`.
 
 ### Teardown
 
@@ -80,7 +89,6 @@ sos run -c config.yml teardown.sos -v4
 # this will undo the steps done with `init.sos`:
 # umount the ebs volume (device), detach it, terminate the instance, delete metadata files,
 # optionally save a snapshot of the ebs volume, and delete the volume
-
 ```
 
 After running `teardown.sos`, the EC2 resources created with `init.sos` will be deleted/terminated (except for the snapshot of your EBS volume, if you have chosen to create it).
@@ -107,7 +115,16 @@ sos status c23ad54f11df17b6 -v4
 
 # check the connection to the ec2 instance
 # which is also named ec2 in our config YAML
-sos remote -c metadata/config_with_ec2_host.yml test ec2 -v4
+sos remote test ec2 -v4
+
+
+# if substeps are being skipped because of saved signatures
+# remove these signatures with:
+sos remove -s
+# more information on signatures at https://vatlab.github.io/sos-docs/doc/user_guide/signature.html
+
+# eventually, you may also want to clean up ~/.sos/tasks/
+rm -R ~/.sos/tasks/
 ```
 
 

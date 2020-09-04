@@ -1,6 +1,5 @@
 [global]
 output_dirname = "metadata"
-config_ec2_yml = f"{output_dirname}/config_with_ec2_host.yml"
 
 cfg = CONFIG
 print("CONFIG", cfg)
@@ -96,39 +95,53 @@ sh: expand=True
 
 [106]
 input: f"{output_dirname}/ec2_instance.json"
-output: f"{config_ec2_yml}"
 depends: sos_step("105")
 
 python: expand=True
     import json
+    import pathlib
     import os
-    import yaml    
+    import shutil
+    import time
+    import yaml
 
-    cfg_str = "{cfg}"
-    cfg = json.loads(cfg_str.replace("'", "\""))
+    hosts_path = pathlib.Path("~/.sos/hosts.yml").expanduser()
+
+    with open(hosts_path, "r") as fp:
+        hosts = yaml.load(fp, Loader=yaml.FullLoader)
 
     with open("{_input}", "r") as fp:
         ec2_instance = json.load(fp)
     
-    cfg['hosts']['ec2']['address'] = "ec2-user@" + ec2_instance["public_ip"]
-    cfg['hosts']['local']['paths']['home'] = os.getcwd()
+    hosts['hosts']['ec2']['address'] = "ec2-user@" + ec2_instance["public_ip"]
+    hosts['hosts']['ec2']['paths']['home'] = "/home/ec2-user/"
 
-    with open("{_output}", "w") as f:
-        yaml.dump(cfg, f, default_flow_style=False)
+    local = hosts['localhost']
+    hosts['hosts'][local]['paths']['home'] = os.getcwd()
+
+    hosts_bkp = hosts_path.with_name("hosts." + str(int(time.time())) + ".yml")
+
+    shutil.copy(hosts_path, hosts_bkp)
+    
+    with open(hosts_path, "w") as f:
+        yaml.dump(hosts, f, default_flow_style=False)
 
 
 [107]
-input: f"{config_ec2_yml}"
+depends: sos_step("106")
 
 python: expand=True
+    import pathlib
     import subprocess
     import yaml
 
-    with open("{_input}", "r") as fp:
-        cfg_ec2 = yaml.load(fp, Loader=yaml.FullLoader)
+    hosts_path = pathlib.Path("~/.sos/hosts.yml").expanduser()
 
-    ec2_addr = cfg_ec2['hosts']['ec2']['address']
-    pem_file = cfg_ec2['hosts']['ec2']['pem_file']
+    with open(hosts_path, "r") as fp:
+        hosts = yaml.load(fp, Loader=yaml.FullLoader)
+
+    ec2_addr = hosts['hosts']['ec2']['address']
+    pem_file = hosts['hosts']['ec2']['pem_file']
 
     cmd_args = ("scp", "-i", pem_file, "install_miniconda_sos.sh", ec2_addr + ":~/")
     print(cmd_args)
@@ -142,8 +155,7 @@ python: expand=True
 
 
 [108]
-input: f"{config_ec2_yml}"
 depends: sos_step("107")
 
 sh: expand=True
-    sos run -c {_input} remote.sos start -v4
+    sos run -c config.yml remote.sos start -v4

@@ -9,28 +9,27 @@ cfg = CONFIG
 task: queue="ec2"
 sh:
     sudo yum update -y
-    sudo yum install xfsprogs -y
-
-[ebs_format]
-task: queue="ec2"
-sh:
-    # TODO: this should not be hardcoded, many things can go wrong
-    # depending on the instance type, it could be /dev/xvdf
-    # https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/device_naming.html
-    # it could be other volumes as well
-    #
-    # an alternative would be to use lsblk and grep to filter the devices
-    # https://unix.stackexchange.com/questions/580683/filter-lsblk-command-using-awk-or-grep
-    # https://unix.stackexchange.com/questions/588735/how-to-output-only-dev-names-and-types-in-lsblk?rq=1
-    sudo mkfs -t xfs /dev/nvme1n1
+    sudo yum install xfsprogs htop tmux git gcc -y
 
 
-[ebs_mount]
+[ebs_format_and_mount]
 mount_dir = cfg["ebs"]["mount_dir"]
+
+# TODO: this should not be hardcoded, many things can go wrong
+# depending on the instance type, it could be /dev/xvdf
+# https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/device_naming.html
+# it could be other volumes as well
+#
+# an alternative would be to use lsblk and grep to filter the devices
+# https://unix.stackexchange.com/questions/580683/filter-lsblk-command-using-awk-or-grep
+# https://unix.stackexchange.com/questions/588735/how-to-output-only-dev-names-and-types-in-lsblk?rq=1
 
 task: queue="ec2"
 sh: expand=True
-    sudo test ! -d {mount_dir} && sudo mkdir {mount_dir}
+    # we are assuming this disk is new and should be formated
+    sudo mkfs -t xfs /dev/nvme1n1
+
+    sudo test ! -d {mount_dir} && sudo mkdir -p {mount_dir}
     sudo mount /dev/nvme1n1 {mount_dir}
     sudo test -O {mount_dir} && sudo chown -R ec2-user {mount_dir}
     # lsblk
@@ -47,14 +46,14 @@ sh: expand=True
 
 [start]
 # https://vatlab.github.io/sos-docs/doc/user_guide/nested_workflow.html
-if cfg["ebs"]["mount_dir"]:
-    sos_run("update + ebs_format + ebs_mount")
+if "ebs" in cfg.keys() and "mount_dir" in cfg["ebs"].keys():
+    sos_run("update + ebs_format_and_mount")
 else:
     sos_run("update")
 
 
 [stop]
-if cfg["ebs"]["mount_dir"]:
+if "ebs" in cfg.keys() and "mount_dir" in cfg["ebs"].keys():
     sos_run("ebs_umount")
 
 

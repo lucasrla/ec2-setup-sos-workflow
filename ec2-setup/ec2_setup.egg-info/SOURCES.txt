@@ -1,4 +1,3 @@
-pyproject.toml
 setup.py
 ec2_setup/__init__.py
 ec2_setup/instances.py

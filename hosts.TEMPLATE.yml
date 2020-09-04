@@ -1,0 +1,17 @@
+# if you are already have a "~/.sos/hosts.yml" file, then
+# you just need to make sure that there is a host named ec2 there
+# and that you have the path to your private key inside pem_file
+
+# for more information about ec2 key pairs, read:
+# https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-key-pairs.html
+
+localhost: local
+hosts:
+  local:
+    paths:
+      home: "" # will be filled in by init.sos
+  ec2:
+    address: "" # will be filled in by init.sos
+    pem_file: "~/.ssh/YOUR_AWS_KEY.pem"
+    paths:
+      home: "" # will be filled in by init.sos, user is assumed to be 'ec2-user'

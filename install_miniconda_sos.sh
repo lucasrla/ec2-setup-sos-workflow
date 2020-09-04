@@ -21,4 +21,4 @@ then
 fi
 
 # Install SoS on base environment
-conda install -y -c conda-forge sos
+conda install -c conda-forge python=3.6 sos -y
